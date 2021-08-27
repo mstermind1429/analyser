@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSV to List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+</head>
+
+{% include "header.html" %}
+
+
+<body>
+<div class="preloader-wrapper">
+    <div class="preloader">
+        <img src="/static/images/preloader.gif" alt="NILA">
+    </div>
+</div>
+<div class="file-upload">
+  <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger( 'click' )">Upload CSV File</button>
+
+  <div class="image-upload-wrap">
+    <input class="file-upload-input" type='file' onchange="readURL(this);" accept="text/csv" />
+    <div class="drag-text">
+      <h4>Drag and drop a file or select file</h4>
+    </div>
+  </div><br><br>
+  <div class="file-upload-content">
+    <div class="image-title-wrap">
+      <button type="button" onclick="removeUpload()" class="remove-image">Remove <span class="image-title">Uploaded Image</span></button>
+    </div>
+  </div>
+  <div class="row">
+      <div class="col-sm">
+          <div class="limit-inputs">
+              <div class="count-limit">
+                  <label for="count-limit">Limit for Count</label><br>
+                  <input class="form-control" id="count-limit-input" name="count-limit" type="number" value="10" />
+              </div><br>
+              <div class="traffic-limit">
+                  <label for="traffic-limit">Limit for Traffic Index</label><br>
+                  <input class="form-control" id="traffic-limit-input" name="traffic-limit" type="number" value="100" />
+              </div><br>
+              <div class="search-limit">
+                  <label for="search-limit">Limit for Search Volume</label><br>
+                  <input class="form-control" id="search-limit-input" name="search-limit" type="number" value="100" />
+              </div><br>
+          </div>
+      </div>
+      <div class="col-sm">
+          <div id="checkboxes">
+              <div class="count-analysis">
+                  <input id="count-checkbox-input" name="count-checkbox" type="checkbox" checked/> Count Analysis
+              </div><br>
+              <div class="traffic-analysis">
+                  <input id="traffic-checkbox-input" name="traffic-checkbox" type="checkbox" checked/> Traffic Analysis
+              </div><br>
+              <div class="search-analysis">
+                  <input id="search-checkbox-input" name="search-checkbox" type="checkbox" checked/> Search Volume Analysis
+              </div><br>
+              <div class="search-metrics-analysis">
+                  <input id="search-metrics-checkbox-input" name="search-metrics-checkbox" type="checkbox" checked/> Search Metrics Analysis
+              </div><br>
+              <div class="example-keywords-analysis">
+                  <input id="example-keywords-checkbox-input" name="example-keywords-checkbox" type="checkbox" checked /> Example Keywords Analysis
+              </div><br>
+              <div class="similar-keywords-analysis">
+                  <input id="similar-keywords-checkbox-input" name="similar-keywords-checkbox" type="checkbox" checked /> Similar Keywords Analysis
+              </div><br>
+              <div class="example-url-keywords-analysis">
+                  <input id="example-url-keywords-checkbox-input" name="example-url-keywords-checkbox" type="checkbox" checked /> Example URL Keywords Analysis
+              </div><br>
+          </div>
+      </div>
+      <div class="col-sm">
+          <div class="exclude-words">
+              <h6> Words for exclusion </h6>
+              <div class="form-group">
+                  <input class="form-control" name="exclude[]" type="text" />
+              </div>
+              <div class="form-group">
+                  <input class="form-control" name="exclude[]" type="text" />
+              </div>
+              <div class="form-group">
+                  <input class="form-control" name="exclude[]" type="text" />
+              </div>
+              <div class="form-group">
+                  <input class="form-control" name="exclude[]" type="text" />
+              </div>
+              <div class="form-group">
+                  <input class="form-control" name="exclude[]" type="text" />
+              </div>
+          </div>
+      </div>
+  </div>
+  <br><br>
+  <div id="error">
+      <span style="color: red">Error: invalid format of the file</span>
+  </div><br><br>
+  <div id="count-csv">
+    <span>Count Table</span>
+    <a style="text-decoration: none;" id="count-table" class="file-upload-btn" href="" download>Download</a><br><br><br>
+    <span>Count List</span>
+    <a style="text-decoration: none;" id="count-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="traffic-csv">
+    <span>Traffic Table</span>
+    <a style="text-decoration: none;" id="traffic-table" class="file-upload-btn" href="" download>Download</a><br><br><br>
+    <span>Traffic List</span>
+    <a style="text-decoration: none;" id="traffic-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="search-csv">
+    <span>Search Volume Table</span>
+    <a style="text-decoration: none;" id="search-table" class="file-upload-btn" href="" download>Download</a><br><br><br>
+    <span>Search Volume List</span>
+    <a style="text-decoration: none;" id="search-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="searchmetrics-csv">
+    <span>Searchmetrics Project Keyword Import</span>
+    <a style="text-decoration: none;" id="searchmetrics-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="example-keywords-csv">
+    <span>Example Keywords Import By Traffic Index</span>
+    <a style="text-decoration: none;" id="example-keywords-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="example-keywords-search-csv">
+    <span>Example Keywords Import By Search Volume</span>
+    <a style="text-decoration: none;" id="example-keywords-search-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="similar-keywords-csv">
+    <span>Similar Keywords Import By Traffic Index</span>
+    <a style="text-decoration: none;" id="similar-keywords-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="similar-keywords-search-csv">
+    <span>Similar Keywords Import By Search Volume</span>
+    <a style="text-decoration: none;" id="similar-keywords-search-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="example-url-keywords-csv">
+    <span>Example URL Keywords Import By Traffic Index</span>
+    <a style="text-decoration: none;" id="example-url-keywords-list" class="file-upload-btn" href="" download>Download</a>
+  </div><br><br>
+  <div id="example-url-keywords-search-csv">
+    <span>Example URL Keywords Import By Search Volume</span>
+    <a style="text-decoration: none;" id="example-url-keywords-search-list" class="file-upload-btn" href="" download>Download</a>
+  </div>
+</div>
+
+</body>
+<script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script>
+let $loading = $('.preloader-wrapper').hide();
+
+$(document).ready(function () {
+    $('#count-csv').hide();
+    $('#traffic-csv').hide();
+    $('#search-csv').hide();
+    $('#searchmetrics-csv').hide();
+    $('#example-keywords-csv').hide();
+    $('#example-keywords-search-csv').hide();
+    $('#similar-keywords-csv').hide();
+    $('#similar-keywords-search-csv').hide();
+    $('#example-url-keywords-search-csv').hide();
+    $('#example-url-keywords-csv').hide();
+    $('#error').hide();
+});
+
+function readURL(input) {
+
+  if (input.files && input.files[0]) {
+    $loading.show();
+
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+      $('.image-upload-wrap').hide();
+
+      $('.file-upload-image').attr('src', e.target.result);
+      $('#count-csv').hide();
+      $('#traffic-csv').hide();
+      $('#search-csv').hide();
+      $('#searchmetrics-csv').hide();
+      $('#example-keywords-csv').hide();
+      $('#example-keywords-search-csv').hide();
+      $('#similar-keywords-csv').hide();
+      $('#similar-keywords-search-csv').hide();
+      $('#example-url-keywords-csv').hide();
+      $('#example-url-keywords-search-csv').hide();
+      $('#error').hide();
+
+      let count_limit = $('#count-limit-input').val();
+      let traffic_limit = $('#traffic-limit-input').val();
+      let search_limit = $('#search-limit-input').val();
+
+      let tasks_num = $(':checkbox:checked').length;
+      console.log(tasks_num);
+
+      let count_analysis = document.getElementById('count-checkbox-input').checked;
+      let traffic_analysis = document.getElementById('traffic-checkbox-input').checked;
+      let search_analysis = document.getElementById('search-checkbox-input').checked;
+      let search_metrics_analysis = document.getElementById('search-metrics-checkbox-input').checked;
+      let example_keywords_analysis = document.getElementById('example-keywords-checkbox-input').checked;
+      let similar_keywords_analysis = document.getElementById('similar-keywords-checkbox-input').checked;
+      let example_url_keywords_analysis = document.getElementById('example-url-keywords-checkbox-input').checked;
+
+      let exclude_words = $("input[name='exclude[]']");
+      let exclude_words_str = '';
+      for(var i = 0; i < exclude_words.length; i++) {
+          exclude_words_str += exclude_words[i].value + ' ';
+      }
+      console.log(exclude_words_str);
+
+      const formData = new FormData();
+      formData.append('csv', input.files[0]);
+      formData.append('count-limit', count_limit);
+      formData.append('traffic-limit', traffic_limit);
+      formData.append('search-limit', search_limit);
+      formData.append('exclude', exclude_words_str);
+
+      let completed_tasks = 0;
+      if(count_analysis) {
+          fetch('/api/v1/getWordCount', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#count-table').attr('href', `/reports/${success['filename']}`);
+                  $('#count-list').attr('href', `/reports/${success['list_filename']}`);
+                  $('#count-csv').show();
+
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  console.log(error)
+                  $("#error").show();
+              }
+          );
+      }
+      if(traffic_analysis) {
+          fetch('/api/v1/getTrafficCount', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#traffic-table').attr('href', `/reports/${success['filename']}`);
+                  $('#traffic-list').attr('href', `/reports/${success['list_filename']}`);
+                  $('#traffic-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  console.log(error);
+                  $("#error").show();
+              }
+          );
+      }
+      if(search_analysis) {
+          fetch('/api/v1/getSearchCount', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#search-table').attr('href', `/reports/${success['filename']}`);
+                  $('#search-list').attr('href', `/reports/${success['list_filename']}`);
+                  $('#search-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  $("#error").show();
+                  console.log(error)
+              }
+          );
+      }
+
+      if (search_metrics_analysis) {
+          fetch('/api/v1/getSearchMetrics', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#searchmetrics-list').attr('href', `/reports/${success['filename']}`);
+                  $('#searchmetrics-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  $("#error").show();
+                  console.log(error)
+              }
+          );
+      }
+
+      if(example_keywords_analysis) {
+          tasks_num++;
+          formData.append('sort', 'Traffic Index');
+          fetch('/api/v1/getExampleKeywords', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#example-keywords-list').attr('href', `/reports/${success['filename']}`);
+                  $('#example-keywords-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  $("#error").show();
+                  console.log(error)
+              }
+          );
+          formData.append('sort', 'Search Volume');
+          fetch('/api/v1/getExampleKeywords', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#example-keywords-search-list').attr('href', `/reports/${success['filename']}`);
+                  $('#example-keywords-search-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  $("#error").show();
+                  console.log(error)
+              }
+          );
+      }
+      if(similar_keywords_analysis) {
+          tasks_num++;
+          formData.append('sort', 'Traffic Index');
+          fetch('/api/v1/getSimilarKeywords', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#similar-keywords-list').attr('href', `/reports/${success['filename']}`);
+                  $('#similar-keywords-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  $("#error").show();
+                  console.log(error)
+              }
+          );
+          formData.append('sort', 'Search Volume');
+          fetch('/api/v1/getSimilarKeywords', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#similar-keywords-search-list').attr('href', `/reports/${success['filename']}`);
+                  $('#similar-keywords-search-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  $("#error").show();
+                  console.log(error)
+              }
+          );
+      }
+
+      if(example_url_keywords_analysis) {
+          tasks_num++;
+          formData.append('sort', 'Traffic Index');
+          fetch('/api/v1/getExampleURLKeywords', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#example-url-keywords-list').attr('href', `/reports/${success['filename']}`);
+                  $('#example-url-keywords-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  $("#error").show();
+                  console.log(error)
+              }
+          );
+          formData.append('sort', 'Search Volume');
+          fetch('/api/v1/getExampleURLKeywords', {
+              method: 'PUT',
+              headers: {
+                  'Content-Disposition': {'filename': input.files[0].name},
+                  "X-CSRFToken": '{{ csrf_token }}',
+              },
+              body: formData
+          }).then(
+              response => response.json()
+          ).then(
+              (success) => {
+                  $('#example-url-keywords-search-list').attr('href', `/reports/${success['filename']}`);
+                  $('#example-url-keywords-search-csv').show();
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+              }
+          ).catch(
+              (error) => {
+                  completed_tasks++;
+                  if (completed_tasks === tasks_num) {
+                      $loading.hide();
+                  }
+                  $("#error").show();
+                  console.log(error)
+              }
+          );
+      }
+
+      $('.image-title').html(input.files[0].name);
+
+    };
+
+    reader.readAsDataURL(input.files[0]);
+
+  } else {
+    removeUpload();
+  }
+}
+
+function removeUpload() {
+  $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+  $('.file-upload-content').hide();
+  $('.image-upload-wrap').show();
+}
+$('.image-upload-wrap').bind('dragover', function () {
+        $('.image-upload-wrap').addClass('image-dropping');
+    });
+$('.image-upload-wrap').bind('dragleave', function () {
+$('.image-upload-wrap').removeClass('image-dropping');
+});
+
+</script>
+<style>
+body {
+  font-family: sans-serif;
+  background-color: #eeeeee;
+}
+
+body.preloader-site {
+    overflow: hidden;
+}
+
+.preloader-wrapper {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999999;
+}
+
+.preloader-wrapper .preloader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 120px;
+}
+
+.file-upload {
+  background-color: #ffffff;
+  width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.file-upload-btn {
+  width: 100%;
+  margin: 0;
+  color: #fff;
+  background: #1FB264;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #15824B;
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.file-upload-btn:hover {
+  background: #1AA059;
+  color: #ffffff;
+  transition: all .2s ease;
+  cursor: pointer;
+}
+
+.file-upload-btn:active {
+  border: 0;
+  transition: all .2s ease;
+}
+
+.file-upload-content {
+  display: none;
+  text-align: center;
+}
+
+.file-upload-input {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.image-upload-wrap {
+  margin-top: 20px;
+  border: 4px dashed #1FB264;
+  position: relative;
+}
+
+.image-dropping,
+.image-upload-wrap:hover {
+  background-color: #1FB264;
+  border: 4px dashed #ffffff;
+}
+
+.image-title-wrap {
+  padding: 0 15px 15px 15px;
+  color: #222;
+}
+
+.drag-text {
+  text-align: center;
+}
+
+.drag-text h4 {
+  font-weight: 100;
+  text-transform: uppercase;
+  color: #15824B;
+  padding: 60px 0;
+}
+
+.file-upload-image {
+  max-height: 200px;
+  max-width: 200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.remove-image {
+  width: 200px;
+  margin: 0;
+  color: #fff;
+  background: #cd4535;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #b02818;
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.remove-image:hover {
+  background: #c13b2a;
+  color: #ffffff;
+  transition: all .2s ease;
+  cursor: pointer;
+}
+
+.remove-image:active {
+  border: 0;
+  transition: all .2s ease;
+}
+</style>
+
+</html>

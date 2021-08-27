@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML Scraping Tool</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+</head>
+
+{% include "header.html" %}
+
+<body>
+<div class="preloader-wrapper">
+    <div class="preloader">
+        <img src="/static/images/preloader.gif" alt="NILA">
+    </div>
+</div>
+<div class="container-lg">
+    <div id="result">
+    </div>
+    <div id="patterns" class="alert alert-success"></div>
+    <div class="form-group">
+      <label for="url"><b>Input URLs</b></label>
+      <textarea class="form-control" id="url" rows="10"></textarea>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-info" id="check" style="width: 150px; height: 60px;">Get</button>
+    </div>
+</div>
+</body>
+
+<script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+<script>
+let $loading = $('.preloader-wrapper').hide();
+
+$(document).ready(function () {
+    $('.alert').hide();
+});
+
+$("#check").click(function() {
+   $loading.show();
+
+   $('#result').html("");
+   $('#patterns').html("");
+
+   let urls = $('#url').val().split("\n");
+   for(let url in urls) {
+       const formData = new FormData();
+       formData.append('url', urls[url]);
+
+       fetch('/api/v1/getHTML', {
+           method: 'POST',
+           headers: {
+               "X-CSRFToken": '{{ csrf_token }}',
+           },
+           body: formData
+       }).then(
+           response => response.json()
+       ).then(
+           (success) => {
+               $("#result").append("<div id=\"success\" class=\"alert alert-success\" role=\"alert\">" +
+                   `URL: ${urls[url]}<br><a download href="/reports/${success['filename']}">Download parsed html</a></div>`);
+               $loading.hide();
+           }
+       ).catch(
+           (error) => {
+               $("#result").append("<div id=\"success\" class=\"alert alert-danger\" role=\"alert\">" +
+                   `Error occurred! Check the url for validation.</div>`);
+               $loading.hide();
+           }
+       );
+   }
+});
+
+</script>
+
+<style>
+body {
+    background-image: url("/static/images/bg.jpg");
+}
+body.preloader-site {
+    overflow: hidden;
+}
+
+.preloader-wrapper {
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999999;
+}
+
+.preloader-wrapper .preloader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 120px;
+}
+</style>
+</html>

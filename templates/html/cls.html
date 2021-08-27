@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CLS Page</title>
+</head>
+<body>
+<div class="container">
+  <article class="post" id="1-article" hidden>1<img src="/reports/1.jpg" style="width: 1200px; height: 800px;"></article>
+  <article class="post" id="2-article" hidden>2<img src="/reports/2.jpg" style="width: 1200px; height: 800px;"></article>
+  <article class="post" id="3-article" hidden>3<img src="/reports/3.jpg" style="width: 1200px; height: 800px;"></article>
+  <article class="post" id="4-article" hidden>4<img src="/reports/4.jpg" style="width: 1200px; height: 800px;"></article>
+</div>
+
+</body>
+
+<script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        setTimeout(function() {
+            $("#2-article").show("slow");
+        }, 500);
+        setTimeout(function() {
+            $("#4-article").show("slow");
+        }, 1000);
+        setTimeout(function() {
+            $("#1-article").show("slow");
+        }, 1500);
+        setTimeout(function() {
+            $("#3-article").show("slow");
+        }, 2000);
+    });
+</script>
+</html>

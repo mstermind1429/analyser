@@ -1,0 +1,181 @@
+<html>
+  <head>
+    {% load static %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="colorlib.com">
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link href="/static/css/main.css" rel="stylesheet" />
+  </head>
+  {% include "header.html" %}
+  <body>
+    <div class="preloader-wrapper">
+        <div class="preloader">
+            <img src="/static/images/preloader.gif" alt="NILA">
+        </div>
+    </div>
+    <div class="s130">
+      <form action="" method="POST">
+        <span style="color: grey;">Input the URL of the site with http/https</span><br><br>
+        <div class="inner-form">
+          <div class="input-field first-wrap">
+            <div class="svg-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+              </svg>
+            </div>
+              <textarea id="search" name="url" type="text" placeholder="URL" required></textarea>
+          </div>
+          <div class="input-field second-wrap">
+            <button class="btn-search" id="get_data" type="button">GET DATA</button>
+          </div>
+        </div>
+        <div class="ready-report" style="margin-left: -100px;">
+        </div>
+      </form>
+    </div>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-167499381-1"></script>
+    <script>
+     window.dataLayer = window.dataLayer || [];
+     function gtag(){dataLayer.push(arguments);}
+     gtag('js', new Date());
+     gtag('config', 'UA-167499381-1');
+    </script>
+    <script src="/static/js/extention/choices.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        let $loading = $('.preloader-wrapper').hide();
+        $(document)
+            .ajaxStart(function() {
+                $loading.show();
+                $(this).css({
+                    "cursor": "wait",
+                    "pointer-events": "none"
+                });
+            })
+            .ajaxStop(function() {
+                $loading.hide();
+            });
+
+        $("#get_data").on("click", function() {
+            $(".ready-report").html("");
+            let urls = $("#search").val().split("\n");
+            let url_num = urls.length;
+
+
+            for(let i = 0; i < url_num; i++) {
+                var win = window.open(urls[i], '_blank');
+                win.focus();
+                $.ajax({
+                    url: '/api/v1/getReport',
+                    type: "GET",
+                    data: {url: urls[i]},
+                    success: (result) => {
+                        let new_report = `<h3><span id="ready-url">${urls[i]}</span> - Ready!</h3>` +
+                            `<h4><a id="mobile_report" href="${result['mobile_report_path']}" download>Mobile Report</a><br>` +
+                            `<a id="desktop_report" href="${result['desktop_report_path']}" download>Desktop Report</a></h4>`;
+
+                        let reports = ['Mobile', 'Desktop'];
+                        for (let elem in result['data']) {
+                            let data = result['data'][elem];
+
+                            new_report += `<h5><a href="/reports/${data['csv']}">CSV ${reports[elem]} Report</a></h5>`;
+
+                            let lcp_value = parseFloat(data['paint_score']);
+                            let lcp_color = null;
+
+
+                            if (lcp_value <= 2500) {
+                                lcp_color = 'green';
+                            } else if (lcp_value > 2500 && lcp_value <= 4000) {
+                                lcp_color = 'orange';
+                            } else {
+                                lcp_color = 'red';
+                            }
+
+                            let cls_value = parseFloat(data['cumulative_ls']);
+                            let cls_color = null;
+
+                            if (cls_value <= 0.1) {
+                                cls_color = 'green';
+                            } else if (cls_value > 0.1 && cls_value <= 0.25) {
+                                cls_color = 'orange';
+                            } else {
+                                cls_color = 'red';
+                            }
+
+                            let fid_value = parseFloat(data['max_potential_fid']);
+                            let fid_color = null;
+
+                            if (fid_value <= 100) {
+                                fid_color = 'green';
+                            } else if (fid_value > 100 && fid_value <= 300) {
+                                fid_color = 'orange';
+                            } else {
+                                fid_color = 'red';
+                            }
+
+                            new_report += `<table class="table table-bordered"><thead><tr><th scope="col">Parameter</th><th scope="col">Value</th>` +
+                                `</tr></thead><tbody><tr><td>Largest Contentful Paint</td><td><span style='color: ${lcp_color}'>${data['paint_score']}</span></td>` +
+                                `</tr><tr><td>Largest Contentful Load Type</td><td>${data['content_type']}</td>` +
+                                `</tr><tr><td>Largest Contentful Paint Element</td><td>${data['largest_cp_element']}</td>` +
+                                `</tr><tr><td>Cumulative Layout Shift Score</td><td><span style='color: ${cls_color}'>${data['cumulative_ls']}</span></td>` +
+                                `</tr><tr><td>Max Potential First Input Delay</td><td><span style='color: ${fid_color}'>${data['max_potential_fid']}</span></td>`;
+
+                            let performance = data['audits']['performance'];
+                            let table_data = '';
+                            for (let i = 0; i < performance.length; i++) {
+                                for (let j = 1; j < performance[i].length; j++) {
+                                    table_data += `</tr><tr><td>${performance[i][j][0]}</td><td><span>${performance[i][j][1]}</span>`
+                                    if (performance[i][j][2] && performance[i][j][2] !== null) {
+                                        table_data += `<br>${performance[i][j][2]}`
+                                    }
+                                    table_data += `</span></td>`
+                                }
+                            }
+
+                            new_report += table_data;
+                            new_report += `</tr></tbody></table>`;
+                        }
+
+                        $(".ready-report").append(new_report);
+                    },
+                    error: () => {
+                        $(".ready-report").append(`<h3 style="color: #FF9494;">Error while loading: <a href="${urls[i]}">${urls[i]}</a>. Invalid format or bad request.</h3>`);
+                    }
+                });
+            }
+        });
+    </script>
+    <style>
+        body.preloader-site {
+            overflow: hidden;
+        }
+
+        .preloader-wrapper {
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999999;
+        }
+
+        .preloader-wrapper .preloader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            width: 120px;
+        }
+
+    </style>
+  </body>
+</html>
